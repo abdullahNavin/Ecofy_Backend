@@ -1,13 +1,204 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
+}
+
+// ─────────────────────────────────────────────
+// ENUMS
+// ─────────────────────────────────────────────
+
+enum Role {
+  MEMBER
+  ADMIN
+}
+
+enum IdeaStatus {
+  DRAFT
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+}
+
+enum VoteType {
+  UPVOTE
+  DOWNVOTE
+}
+
+// ─────────────────────────────────────────────
+// USER
+// ─────────────────────────────────────────────
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  role         Role     @default(MEMBER)
+  isActive     Boolean  @default(true)
+  avatarUrl    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  ideas      Idea[]
+  comments   Comment[]
+  votes      Vote[]
+  purchases  Purchase[]
+  sessions   Session[]
+  newsletter Newsletter?
+
+  @@map("users")
+}
+
+// BetterAuth session table
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+// ─────────────────────────────────────────────
+// CATEGORY
+// ─────────────────────────────────────────────
+
+model Category {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  slug      String   @unique
+  createdAt DateTime @default(now())
+
+  ideas Idea[]
+
+  @@map("categories")
+}
+
+// ─────────────────────────────────────────────
+// IDEA
+// ─────────────────────────────────────────────
+
+model Idea {
+  id                String     @id @default(cuid())
+  title             String
+  slug              String     @unique
+  problemStatement  String     @db.Text
+  proposedSolution  String     @db.Text
+  description       String     @db.Text
+  images            String[]
+  isPaid            Boolean    @default(false)
+  price             Decimal?   @db.Decimal(10, 2)
+  status            IdeaStatus @default(DRAFT)
+  rejectionFeedback String?    @db.Text
+  upvoteCount       Int        @default(0)
+  downvoteCount     Int        @default(0)
+  commentCount      Int        @default(0)
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+
+  // FK
+  authorId   String
+  categoryId String
+
+  // Relations
+  author    User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  category  Category   @relation(fields: [categoryId], references: [id])
+  votes     Vote[]
+  comments  Comment[]
+  purchases Purchase[]
+
+  @@index([status])
+  @@index([categoryId])
+  @@index([authorId])
+  @@index([upvoteCount])
+  @@map("ideas")
+}
+
+// ─────────────────────────────────────────────
+// VOTE
+// ─────────────────────────────────────────────
+
+model Vote {
+  id        String   @id @default(cuid())
+  type      VoteType
+  createdAt DateTime @default(now())
+
+  userId String
+  ideaId String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  idea Idea @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, ideaId])
+  @@map("votes")
+}
+
+// ─────────────────────────────────────────────
+// COMMENT  (nested / threaded)
+// ─────────────────────────────────────────────
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String   @db.Text
+  isDeleted Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  authorId String
+  ideaId   String
+  parentId String?
+
+  author  User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  idea    Idea      @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+  parent  Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies Comment[] @relation("CommentReplies")
+
+  @@index([ideaId])
+  @@index([parentId])
+  @@map("comments")
+}
+
+// ─────────────────────────────────────────────
+// PURCHASE  (paid ideas)
+// ─────────────────────────────────────────────
+
+model Purchase {
+  id                  String   @id @default(cuid())
+  amount              Decimal  @db.Decimal(10, 2)
+  currency            String   @default("usd")
+  stripeSessionId     String   @unique
+  stripePaymentIntent String?
+  status              String   // "pending" | "completed" | "refunded"
+  createdAt           DateTime @default(now())
+
+  userId String
+  ideaId String
+
+  user User @relation(fields: [userId], references: [id])
+  idea Idea @relation(fields: [ideaId], references: [id])
+
+  @@unique([userId, ideaId])
+  @@map("purchases")
+}
+
+// ─────────────────────────────────────────────
+// NEWSLETTER
+// ─────────────────────────────────────────────
+
+model Newsletter {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  userId    String?  @unique
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@map("newsletter_subscribers")
 }

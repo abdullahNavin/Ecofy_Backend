@@ -4,13 +4,22 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "tsx watch src/app.ts",
+    "start": "node dist/app.js",
+    "build": "tsc",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:push": "prisma db push",
+    "db:studio": "prisma studio"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "packageManager": "pnpm@10.27.0",
   "devDependencies": {
+    "@types/bcryptjs": "^3.0.0",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
     "@types/node": "^25.6.0",
     "@types/pg": "^8.20.0",
     "prisma": "^7.7.0",
@@ -20,7 +29,14 @@
   "dependencies": {
     "@prisma/adapter-pg": "^7.7.0",
     "@prisma/client": "^7.7.0",
+    "bcryptjs": "^3.0.3",
+    "better-auth": "^1.6.2",
+    "cors": "^2.8.6",
     "dotenv": "^17.4.1",
-    "pg": "^8.20.0"
+    "express": "^5.2.1",
+    "helmet": "^8.1.0",
+    "pg": "^8.20.0",
+    "stripe": "^22.0.1",
+    "zod": "^4.3.6"
   }
 }
