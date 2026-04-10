@@ -1,7 +1,9 @@
 import { Request, Response, NextFunction } from "express";
 import { toNodeHandler } from "better-auth/node";
+import crypto from "crypto";
 import { auth } from "../../auth/betterAuth";
 import * as authService from "./auth.service";
+import prisma from "../../lib/prisma";
 import { validate } from "../../common/middleware/validate.middleware";
 import {
   signupSchema,
@@ -9,6 +11,28 @@ import {
   updateProfileSchema,
   changePasswordSchema,
 } from "./auth.validator";
+
+// Helper to manually tie into BetterAuth via Prisma Sessions
+const setSessionCookie = async (res: Response, userId: string) => {
+  const token = crypto.randomBytes(32).toString("hex");
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+  
+  await prisma.session.create({
+    data: {
+      userId,
+      token,
+      expiresAt,
+    },
+  });
+
+  res.cookie("better-auth.session_token", token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in ms
+    path: "/",
+  });
+};
 
 // BetterAuth handler (handles /signup, /login, /logout via BetterAuth internally)
 export const betterAuthHandler = toNodeHandler(auth);
@@ -19,6 +43,7 @@ export const signup = [
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const user = await authService.signupUser(req.body);
+      await setSessionCookie(res, user.id);
       res.status(201).json({ success: true, data: user });
     } catch (err) {
       next(err);
@@ -26,13 +51,13 @@ export const signup = [
   },
 ];
 
-// POST /api/v1/auth/login  — delegates to BetterAuth, just re-signs in and returns user
+// POST /api/v1/auth/login
 export const login = [
   validate(loginSchema),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const user = await authService.loginUser(req.body.email, req.body.password);
-      // Let BetterAuth create the session; we just validate credentials here and return user info
+      await setSessionCookie(res, user.id);
       res.status(200).json({
         success: true,
         data: {
