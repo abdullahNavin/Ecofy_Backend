@@ -7,7 +7,7 @@ import { requireAuth } from "../../common/middleware/auth.middleware";
 const router = Router();
 
 // BetterAuth handles its own routes (signup, signin, signout, session)
-router.all("/better-auth/*", toNodeHandler(auth));
+router.all(/^\/better-auth(\/.*)?$/, toNodeHandler(auth));
 
 // Custom signup (creates user in our users table + hashed password)
 router.post("/signup", ...(Array.isArray(ctrl.signup) ? ctrl.signup : [ctrl.signup]));
