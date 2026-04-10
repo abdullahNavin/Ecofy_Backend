@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from "express";
+import { Prisma } from "@prisma/client";
 import { env } from "../../config/env";
 
 export class AppError extends Error {
@@ -21,6 +22,44 @@ export function errorHandler(
     res.status(err.statusCode).json({
       success: false,
       error: err.message,
+    });
+    return;
+  }
+
+  if (err instanceof Prisma.PrismaClientKnownRequestError) {
+    if (err.code === "P2002") {
+      res.status(409).json({
+        success: false,
+        error: "Duplicate resource. A unique constraint failed.",
+      });
+      return;
+    }
+    if (err.code === "P2025") {
+      res.status(404).json({
+        success: false,
+        error: "Resource not found.",
+      });
+      return;
+    }
+    if (err.code === "P2003") {
+      res.status(400).json({
+        success: false,
+        error: "Foreign key constraint failed. Related resource does not exist.",
+      });
+      return;
+    }
+    // Generic BAD REQUEST for other known Prisma errors to prevent 500
+    res.status(400).json({
+      success: false,
+      error: "Database constraint or invalid request error.",
+    });
+    return;
+  }
+
+  if (err instanceof Prisma.PrismaClientValidationError) {
+    res.status(400).json({
+      success: false,
+      error: "Database validation error (e.g. invalid types or missing data).",
     });
     return;
   }
