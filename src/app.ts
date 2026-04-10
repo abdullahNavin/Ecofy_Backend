@@ -35,7 +35,7 @@ app.use(errorHandler);
 
 // ─── Start Server ─────────────────────────────────────────────────────────────
 app.listen(env.PORT, () => {
-  console.log(`🚀 Ecofy API running on http://localhost:${env.PORT}/api/v1`);
+  console.log(`🚀 Ecofy API running on http://localhost:${env.PORT}`);
   console.log(`   Environment: ${env.NODE_ENV}`);
 });
 
