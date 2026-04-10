@@ -8,8 +8,14 @@ import apiRoutes from "./routes/index";
 
 const app = express();
 
-// ─── Security & CORS ───────────────────────────────────────────────────────────
-app.use(helmet());
+// ─── Security ────────────────────────────────────────────────────────────────
+app.use(
+  helmet({
+    crossOriginResourcePolicy: false, // useful if serving images/files
+  })
+);
+
+// ─── CORS ────────────────────────────────────────────────────────────────────
 app.use(
   cors({
     origin: env.CLIENT_URL,
@@ -17,26 +23,30 @@ app.use(
   })
 );
 
-// ─── Body Parsers ──────────────────────────────────────────────────────────────
-// NOTE: /api/v1/payments/webhook uses raw body (configured in payment.routes.ts)
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// ─── Body Parsers ────────────────────────────────────────────────────────────
+app.use(express.json({ limit: "10kb" })); // prevent large payload attacks
+app.use(express.urlencoded({ extended: true, limit: "10kb" }));
 
-// ─── Routes ───────────────────────────────────────────────────────────────────
+// ─── Health Check (important for deployment) ─────────────────────────────────
+app.get("/health", (_req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "Server is healthy",
+  });
+});
+
+// ─── API Routes ──────────────────────────────────────────────────────────────
 app.use("/api/v1", apiRoutes);
 
-// 404 fallback
+// ─── 404 Handler ─────────────────────────────────────────────────────────────
 app.use((_req, res) => {
-  res.status(404).json({ success: false, error: "Route not found" });
+  res.status(404).json({
+    success: false,
+    error: "Route not found",
+  });
 });
 
-// ─── Global Error Handler ─────────────────────────────────────────────────────
+// ─── Global Error Handler ────────────────────────────────────────────────────
 app.use(errorHandler);
-
-// ─── Start Server ─────────────────────────────────────────────────────────────
-app.listen(env.PORT, () => {
-  console.log(`🚀 Ecofy API running on http://localhost:${env.PORT}`);
-  console.log(`   Environment: ${env.NODE_ENV}`);
-});
 
 export default app;

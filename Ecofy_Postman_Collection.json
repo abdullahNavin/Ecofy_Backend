@@ -1,0 +1,861 @@
+{
+  "info": {
+    "name": "Ecofy Backend API v1",
+    "description": "Complete Postman collection for testing the Ecofy Backend API endpoints.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:4000/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "cookie_placeholder",
+      "value": "better-auth.session_token=...",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "health"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Signup",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test User\",\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/signup",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "signup"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Login (Sets Cookie)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/better-auth/sign-in/email",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "better-auth",
+                "sign-in",
+                "email"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Profile (Me)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Test User\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"password123\",\n  \"newPassword\": \"newPassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/me/password",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "me",
+                "password"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Categories",
+      "item": [
+        {
+          "name": "Get Categories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/categories",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "categories"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Category (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Renewable Energy\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/categories",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "categories"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Category (Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Clean Energy\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/categories/TARGET_CATEGORY_ID",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "categories",
+                "TARGET_CATEGORY_ID"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Category (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/categories/TARGET_CATEGORY_ID",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "categories",
+                "TARGET_CATEGORY_ID"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ideas",
+      "item": [
+        {
+          "name": "List Ideas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/ideas?page=1&limit=10&sort=recent",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "ideas"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "sort",
+                  "value": "recent"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Specific Idea",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/ideas/TARGET_IDEA_ID",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "ideas",
+                "TARGET_IDEA_ID"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Idea",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Community Solar Project\",\n  \"categoryId\": \"TARGET_CATEGORY_ID\",\n  \"problemStatement\": \"Lots of people lack access to affordable renewable energy inside the community.\",\n  \"proposedSolution\": \"Establish a shared community microgrid using modern solar arrays.\",\n  \"description\": \"Full description of the idea and costs involved...\",\n  \"isPaid\": false,\n  \"images\": []\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/ideas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "ideas"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Idea (Draft/Rejected)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated Community Solar\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/ideas/TARGET_IDEA_ID",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "ideas",
+                "TARGET_IDEA_ID"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Submit Idea for Review",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/ideas/TARGET_IDEA_ID/submit",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "ideas",
+                "TARGET_IDEA_ID",
+                "submit"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Idea",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/ideas/TARGET_IDEA_ID",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "ideas",
+                "TARGET_IDEA_ID"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Votes",
+      "item": [
+        {
+          "name": "Cast Vote",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"UPVOTE\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/ideas/TARGET_IDEA_ID/votes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "ideas",
+                "TARGET_IDEA_ID",
+                "votes"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Remove Vote",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/ideas/TARGET_IDEA_ID/votes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "ideas",
+                "TARGET_IDEA_ID",
+                "votes"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Comments",
+      "item": [
+        {
+          "name": "Get Idea Comments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/ideas/TARGET_IDEA_ID/comments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "ideas",
+                "TARGET_IDEA_ID",
+                "comments"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Post Original Comment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"This is an amazing idea!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/ideas/TARGET_IDEA_ID/comments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "ideas",
+                "TARGET_IDEA_ID",
+                "comments"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Reply to Comment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"I totally agree with you on this.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/ideas/TARGET_IDEA_ID/comments/TARGET_PARENT_COMMENT_ID/replies",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "ideas",
+                "TARGET_IDEA_ID",
+                "comments",
+                "TARGET_PARENT_COMMENT_ID",
+                "replies"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Comment",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/ideas/TARGET_IDEA_ID/comments/TARGET_COMMENT_ID",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "ideas",
+                "TARGET_IDEA_ID",
+                "comments",
+                "TARGET_COMMENT_ID"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Payments",
+      "item": [
+        {
+          "name": "Create Checkout Session",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ideaId\": \"TARGET_IDEA_ID\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/payments/checkout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "payments",
+                "checkout"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Verify Purchase",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/payments/verify/TARGET_STRIPE_SESSION_ID",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "payments",
+                "verify",
+                "TARGET_STRIPE_SESSION_ID"
+              ]
+            }
+          }
+        },
+        {
+          "name": "List User Purchases",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/payments/purchases",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "payments",
+                "purchases"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Search",
+      "item": [
+        {
+          "name": "Search Ideas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/search?q=solar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "solar"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Newsletter",
+      "item": [
+        {
+          "name": "Subscribe",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"newsletter@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/newsletter/subscribe",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "newsletter",
+                "subscribe"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Unsubscribe",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"newsletter@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/newsletter/unsubscribe",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "newsletter",
+                "unsubscribe"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "List All Ideas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/ideas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "ideas"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Approve Idea",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/ideas/TARGET_IDEA_ID/approve",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "ideas",
+                "TARGET_IDEA_ID",
+                "approve"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Reject Idea",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"feedback\": \"Please include more specifics on the implementation.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/ideas/TARGET_IDEA_ID/reject",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "ideas",
+                "TARGET_IDEA_ID",
+                "reject"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Idea (Admin Override)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/ideas/TARGET_IDEA_ID",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "ideas",
+                "TARGET_IDEA_ID"
+              ]
+            }
+          }
+        },
+        {
+          "name": "List Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "users"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Activate User",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/users/TARGET_USER_ID/activate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "users",
+                "TARGET_USER_ID",
+                "activate"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Deactivate User",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/users/TARGET_USER_ID/deactivate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "users",
+                "TARGET_USER_ID",
+                "deactivate"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Change User Role",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"ADMIN\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/users/TARGET_USER_ID/role",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "users",
+                "TARGET_USER_ID",
+                "role"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
