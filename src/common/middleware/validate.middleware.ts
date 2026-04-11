@@ -25,7 +25,10 @@ export function validateQuery(schema: ZodSchema) {
         .join(", ");
       return next(new AppError(message, 400));
     }
-    req.query = result.data as typeof req.query;
+    Object.defineProperty(req, "query", {
+      value: result.data,
+      writable: true,
+    });
     next();
   };
 }
