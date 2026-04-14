@@ -18,6 +18,7 @@ router.post("/logout", ctrl.logout);
 
 // Profile routes (protected)
 router.get("/me", requireAuth, ctrl.getMe);
+router.get("/dashboard-summary", requireAuth, ctrl.getDashboardSummary);
 router.patch("/me", requireAuth, ...(Array.isArray(ctrl.updateMe) ? ctrl.updateMe : [ctrl.updateMe]));
 router.patch("/me/password", requireAuth, ...(Array.isArray(ctrl.changePassword) ? ctrl.changePassword : [ctrl.changePassword]));
 

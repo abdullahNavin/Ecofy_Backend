@@ -22,6 +22,19 @@ export const listIdeas = [
   },
 ];
 
+export const listMyIdeas = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const ideas = await ideaService.listMyIdeas(req.user!.id);
+    res.json({ success: true, data: ideas });
+  } catch (err) {
+    next(err);
+  }
+};
+
 export const getIdea = async (
   req: Request,
   res: Response,

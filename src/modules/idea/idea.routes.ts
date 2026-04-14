@@ -19,6 +19,9 @@ router.get(
   ...(Array.isArray(ctrl.listIdeas) ? ctrl.listIdeas : [ctrl.listIdeas])
 );
 
+// Member-only listing must come before "/:id" so "mine" is not treated as an idea id.
+router.get("/mine", requireAuth, ctrl.listMyIdeas);
+
 router.get(
   "/:id",
   (req, res, next) => {

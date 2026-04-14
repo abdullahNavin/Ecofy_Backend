@@ -28,6 +28,12 @@ const ideaSelect = {
   category: { select: { id: true, name: true, slug: true } },
 } satisfies Prisma.IdeaSelect;
 
+const memberIdeaSelect = {
+  ...ideaSelect,
+  rejectionFeedback: true,
+  updatedAt: true,
+} satisfies Prisma.IdeaSelect;
+
 export async function listApprovedIdeas(
   query: z.infer<typeof listIdeasQuerySchema>,
   userId?: string
@@ -82,13 +88,19 @@ export async function listApprovedIdeas(
   return { ideas: safe, meta: paginate(total, page, limit) };
 }
 
+export async function listMyIdeas(userId: string) {
+  return prisma.idea.findMany({
+    where: { authorId: userId },
+    orderBy: { createdAt: "desc" },
+    select: memberIdeaSelect,
+  });
+}
+
 export async function getIdeaById(ideaId: string, userId?: string) {
   const idea = await prisma.idea.findUnique({
     where: { id: ideaId },
     select: {
-      ...ideaSelect,
-      rejectionFeedback: true,
-      updatedAt: true,
+      ...memberIdeaSelect,
     },
   });
   if (!idea) throw new AppError("Idea not found", 404);
@@ -205,6 +217,6 @@ export async function submitIdea(ideaId: string, userId: string) {
   return prisma.idea.update({
     where: { id: ideaId },
     data: { status: IdeaStatus.UNDER_REVIEW },
-    select: ideaSelect,
+    select: memberIdeaSelect,
   });
 }

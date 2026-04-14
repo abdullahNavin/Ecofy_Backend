@@ -80,4 +80,93 @@ export async function changePassword(
   await prisma.user.update({ where: { id: userId }, data: { passwordHash } });
 }
 
+export async function getDashboardSummary(userId: string) {
+  const [myIdeas, recentComments, recentVotes, commentsOnIdeasCount] = await Promise.all([
+    prisma.idea.findMany({
+      where: { authorId: userId },
+      select: {
+        id: true,
+        title: true,
+        upvoteCount: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.comment.findMany({
+      where: {
+        idea: { authorId: userId },
+      },
+      select: {
+        id: true,
+        createdAt: true,
+        author: {
+          select: { id: true, name: true },
+        },
+        idea: {
+          select: { id: true, title: true },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+      take: 5,
+    }),
+    prisma.vote.findMany({
+      where: {
+        idea: { authorId: userId },
+      },
+      select: {
+        id: true,
+        type: true,
+        createdAt: true,
+        user: {
+          select: { id: true, name: true },
+        },
+        idea: {
+          select: { id: true, title: true },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+      take: 5,
+    }),
+    prisma.comment.count({
+      where: {
+        idea: { authorId: userId },
+      },
+    }),
+  ]);
+
+  const totalUpvotesReceived = myIdeas.reduce((sum, idea) => sum + idea.upvoteCount, 0);
+
+  const recentActivity = [
+    ...recentVotes.map((vote) => ({
+      id: vote.id,
+      type: "vote" as const,
+      createdAt: vote.createdAt,
+      actorName: vote.user.name,
+      ideaId: vote.idea.id,
+      ideaTitle: vote.idea.title,
+      meta: vote.type,
+    })),
+    ...recentComments.map((comment) => ({
+      id: comment.id,
+      type: "comment" as const,
+      createdAt: comment.createdAt,
+      actorName: comment.author.name,
+      ideaId: comment.idea.id,
+      ideaTitle: comment.idea.title,
+      meta: null,
+    })),
+  ]
+    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+    .slice(0, 5);
+
+  return {
+    stats: {
+      myIdeas: myIdeas.length,
+      totalUpvotesReceived,
+      commentsOnIdeas: commentsOnIdeasCount,
+    },
+    recentActivity,
+  };
+}
+
 export { auth };

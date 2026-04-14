@@ -137,6 +137,20 @@ export const getMe = async (
   }
 };
 
+// GET /api/v1/auth/dashboard-summary
+export const getDashboardSummary = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const data = await authService.getDashboardSummary(req.user!.id);
+    res.json({ success: true, data });
+  } catch (err) {
+    next(err);
+  }
+};
+
 // PATCH /api/v1/auth/me
 export const updateMe = [
   validate(updateProfileSchema),
