@@ -11,6 +11,7 @@ import {
   updateProfileSchema,
   changePasswordSchema,
 } from "./auth.validator";
+import type { Role } from "@prisma/client";
 
 // Helper to manually tie into BetterAuth via Prisma Sessions
 const setSessionCookie = async (res: Response, userId: string) => {
@@ -34,9 +35,25 @@ const setSessionCookie = async (res: Response, userId: string) => {
   });
 };
 
+const setRoleCookie = (res: Response, role: Role) => {
+  res.cookie("ecofy.role", role, {
+    httpOnly: false,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+    path: "/",
+  });
+};
+
 const clearSessionCookie = (res: Response) => {
   res.clearCookie("better-auth.session_token", {
     httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+  });
+  res.clearCookie("ecofy.role", {
+    httpOnly: false,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
@@ -53,6 +70,7 @@ export const signup = [
     try {
       const user = await authService.signupUser(req.body);
       await setSessionCookie(res, user.id);
+      setRoleCookie(res, user.role);
       res.status(201).json({ success: true, data: user });
     } catch (err) {
       next(err);
@@ -67,6 +85,7 @@ export const login = [
     try {
       const user = await authService.loginUser(req.body.email, req.body.password);
       await setSessionCookie(res, user.id);
+      setRoleCookie(res, user.role);
       res.status(200).json({
         success: true,
         data: {

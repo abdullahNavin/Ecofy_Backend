@@ -31,7 +31,7 @@ export async function createCheckout(userId: string, ideaId: string) {
         },
       },
     ],
-    success_url: `${env.CLIENT_URL}/ideas/${ideaId}?session_id={CHECKOUT_SESSION_ID}`,
+    success_url: `${env.CLIENT_URL}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${env.CLIENT_URL}/ideas/${ideaId}`,
     metadata: { userId, ideaId },
   });
@@ -54,12 +54,29 @@ export async function createCheckout(userId: string, ideaId: string) {
 }
 
 export async function verifyPurchase(sessionId: string, userId: string) {
-  const purchase = await prisma.purchase.findUnique({
+  let purchase = await prisma.purchase.findUnique({
     where: { stripeSessionId: sessionId },
     include: { idea: { select: { id: true, title: true } } },
   });
   if (!purchase) throw new AppError("Purchase not found", 404);
   if (purchase.userId !== userId) throw new AppError("Forbidden", 403);
+
+  if (purchase.status !== "completed") {
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+    if (session.payment_status === "paid") {
+      purchase = await prisma.purchase.update({
+        where: { stripeSessionId: sessionId },
+        data: {
+          status: "completed",
+          stripePaymentIntent:
+            typeof session.payment_intent === "string"
+              ? session.payment_intent
+              : purchase.stripePaymentIntent,
+        },
+        include: { idea: { select: { id: true, title: true } } },
+      });
+    }
+  }
 
   return purchase;
 }

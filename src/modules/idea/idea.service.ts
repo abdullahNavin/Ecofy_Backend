@@ -93,14 +93,20 @@ export async function getIdeaById(ideaId: string, userId?: string) {
   });
   if (!idea) throw new AppError("Idea not found", 404);
 
+  const baseIdea = {
+    ...idea,
+    isPurchased: !idea.isPaid,
+  };
+
   // Gate paid content
   if (idea.isPaid && idea.status === IdeaStatus.APPROVED) {
     if (!userId) {
       return {
-        ...idea,
+        ...baseIdea,
         description: null,
         proposedSolution: null,
         problemStatement: null,
+        isPurchased: false,
         _locked: true,
       };
     }
@@ -109,16 +115,26 @@ export async function getIdeaById(ideaId: string, userId?: string) {
     });
     if (!purchased) {
       return {
-        ...idea,
+        ...baseIdea,
         description: null,
         proposedSolution: null,
         problemStatement: null,
+        isPurchased: false,
         _locked: true,
       };
     }
+
+    return {
+      ...baseIdea,
+      isPurchased: true,
+      _locked: false,
+    };
   }
 
-  return idea;
+  return {
+    ...baseIdea,
+    _locked: false,
+  };
 }
 
 export async function createIdea(

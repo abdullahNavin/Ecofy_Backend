@@ -10,6 +10,11 @@ const pageQuerySchema = z.object({
   status: z.string().optional(),
 });
 
+const updateIdeaStatusSchema = z.object({
+  status: z.enum(["UNDER_REVIEW", "APPROVED", "REJECTED"]),
+  feedback: z.string().trim().optional(),
+});
+
 export const listIdeas = [
   validateQuery(pageQuerySchema),
   async (req: Request, res: Response, next: NextFunction) => {
@@ -65,6 +70,23 @@ export const deleteIdea = async (
     next(err);
   }
 };
+
+export const updateIdeaStatus = [
+  validate(updateIdeaStatusSchema),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const id = String(req.params["id"]);
+      const data = await adminService.updateIdeaStatus(
+        id,
+        req.body.status,
+        req.body.feedback
+      );
+      res.json({ success: true, data });
+    } catch (err) {
+      next(err);
+    }
+  },
+];
 
 export const listUsers = [
   validateQuery(pageQuerySchema),

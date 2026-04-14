@@ -59,6 +59,38 @@ export async function rejectIdea(ideaId: string, feedback: string) {
   });
 }
 
+export async function updateIdeaStatus(
+  ideaId: string,
+  status: "UNDER_REVIEW" | "APPROVED" | "REJECTED",
+  feedback?: string
+) {
+  const idea = await prisma.idea.findUnique({ where: { id: ideaId } });
+  if (!idea) throw new AppError("Idea not found", 404);
+
+  if (status === "REJECTED" && (!feedback || feedback.trim().length < 10)) {
+    throw new AppError("Rejection feedback must be at least 10 characters", 422);
+  }
+
+  return prisma.idea.update({
+    where: { id: ideaId },
+    data: {
+      status: status as IdeaStatus,
+      rejectionFeedback: status === "REJECTED" ? feedback!.trim() : null,
+    },
+    select: {
+      id: true,
+      title: true,
+      status: true,
+      isPaid: true,
+      createdAt: true,
+      author: { select: { id: true, name: true, email: true } },
+      category: { select: { id: true, name: true } },
+      upvoteCount: true,
+      downvoteCount: true,
+    },
+  });
+}
+
 export async function adminDeleteIdea(ideaId: string) {
   const idea = await prisma.idea.findUnique({ where: { id: ideaId } });
   if (!idea) throw new AppError("Idea not found", 404);

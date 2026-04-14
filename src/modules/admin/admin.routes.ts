@@ -18,6 +18,10 @@ router.patch(
   "/ideas/:id/reject",
   ...(Array.isArray(ctrl.rejectIdea) ? ctrl.rejectIdea : [ctrl.rejectIdea])
 );
+router.patch(
+  "/ideas/:id/status",
+  ...(Array.isArray(ctrl.updateIdeaStatus) ? ctrl.updateIdeaStatus : [ctrl.updateIdeaStatus])
+);
 router.delete("/ideas/:id", ctrl.deleteIdea);
 
 // Users
