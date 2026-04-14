@@ -14,6 +14,7 @@ router.post("/signup", ...(Array.isArray(ctrl.signup) ? ctrl.signup : [ctrl.sign
 
 // Custom login (validates credentials, BetterAuth session via cookie)
 router.post("/login", ...(Array.isArray(ctrl.login) ? ctrl.login : [ctrl.login]));
+router.post("/logout", ctrl.logout);
 
 // Profile routes (protected)
 router.get("/me", requireAuth, ctrl.getMe);

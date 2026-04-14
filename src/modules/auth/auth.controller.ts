@@ -34,6 +34,15 @@ const setSessionCookie = async (res: Response, userId: string) => {
   });
 };
 
+const clearSessionCookie = (res: Response) => {
+  res.clearCookie("better-auth.session_token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+  });
+};
+
 // BetterAuth handler (handles /signup, /login, /logout via BetterAuth internally)
 export const betterAuthHandler = toNodeHandler(auth);
 
@@ -74,6 +83,26 @@ export const login = [
     }
   },
 ];
+
+// POST /api/v1/auth/logout
+export const logout = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const cookieHeader = req.headers.cookie || "";
+    const sessionTokenMatch = cookieHeader.match(/better-auth\.session_token=([^;]+)/);
+    const token = sessionTokenMatch ? sessionTokenMatch[1] : null;
+
+    if (token) {
+      await prisma.session.deleteMany({
+        where: { token },
+      });
+    }
+
+    clearSessionCookie(res);
+    res.status(200).json({ success: true, data: { message: "Logged out successfully" } });
+  } catch (err) {
+    next(err);
+  }
+};
 
 // GET /api/v1/auth/me
 export const getMe = async (
