@@ -14,10 +14,19 @@ import {
 import type { Role } from "@prisma/client";
 
 // Helper to manually tie into BetterAuth via Prisma Sessions
+const isProduction = process.env.NODE_ENV === "production";
+const defaultCookieOptions = (httpOnly: boolean) => ({
+  httpOnly,
+  secure: isProduction,
+  sameSite: isProduction ? "none" as const : "lax" as const,
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+  path: "/",
+});
+
 const setSessionCookie = async (res: Response, userId: string) => {
   const token = crypto.randomBytes(32).toString("hex");
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
-  
+
   await prisma.session.create({
     data: {
       userId,
@@ -26,37 +35,21 @@ const setSessionCookie = async (res: Response, userId: string) => {
     },
   });
 
-  res.cookie("better-auth.session_token", token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in ms
-    path: "/",
-  });
+  res.cookie("better-auth.session_token", token, defaultCookieOptions(true));
 };
 
 const setRoleCookie = (res: Response, role: Role) => {
-  res.cookie("ecofy.role", role, {
-    httpOnly: false,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-    path: "/",
-  });
+  res.cookie("ecofy.role", role, defaultCookieOptions(false));
 };
 
 const clearSessionCookie = (res: Response) => {
   res.clearCookie("better-auth.session_token", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
+    ...defaultCookieOptions(true),
+    maxAge: 0,
   });
   res.clearCookie("ecofy.role", {
-    httpOnly: false,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
+    ...defaultCookieOptions(false),
+    maxAge: 0,
   });
 };
 

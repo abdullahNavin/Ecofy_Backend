@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: ecofy-server
+    env: node
+    branch: main
+    region: oregon
+    plan: starter
+    buildCommand: pnpm prisma generate && pnpm build
+    startCommand: pnpm start
+    healthCheckPath: /api/v1/health
+    autoDeploy: true

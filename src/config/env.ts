@@ -6,10 +6,16 @@ function requireEnv(key: string): string {
   return value;
 }
 
+const renderExternalURL = process.env["RENDER_EXTERNAL_URL"];
+const defaultBetterAuthURL = process.env["BETTER_AUTH_URL"] ??
+  (renderExternalURL
+    ? `https://${renderExternalURL}/api/v1/auth/better-auth`
+    : `http://localhost:${process.env["PORT"] ?? "4000"}/api/v1/auth/better-auth`);
+
 export const env = {
   DATABASE_URL: requireEnv("DATABASE_URL"),
   BETTER_AUTH_SECRET: requireEnv("BETTER_AUTH_SECRET"),
-  BETTER_AUTH_URL: process.env["BETTER_AUTH_URL"] ?? "http://localhost:4000",
+  BETTER_AUTH_URL: defaultBetterAuthURL,
   STRIPE_SECRET_KEY: process.env["STRIPE_SECRET_KEY"] ?? "",
   STRIPE_WEBHOOK_SECRET: process.env["STRIPE_WEBHOOK_SECRET"] ?? "",
   STRIPE_CURRENCY: process.env["STRIPE_CURRENCY"] ?? "usd",
