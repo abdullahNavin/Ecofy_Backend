@@ -19,6 +19,7 @@ const defaultCookieOptions = (httpOnly: boolean) => ({
   httpOnly,
   secure: isProduction,
   sameSite: isProduction ? "none" as const : "lax" as const,
+  partitioned: isProduction,
   maxAge: 7 * 24 * 60 * 60 * 1000,
   path: "/",
 });
