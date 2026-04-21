@@ -3,3 +3,4 @@ dist/
 .env
 generated/
 *.log
+ecofy-backend-prd.md
