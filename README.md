@@ -7,6 +7,45 @@ Ecofy Backend powers the core business logic behind the Ecofy platform. It manag
 
 The API is built with Express, TypeScript, Prisma, and PostgreSQL, with Stripe handling premium checkout flows and Better Auth supporting secure session-based authentication.
 
+### Detailed Project Explanation
+Ecofy is a comprehensive sustainability idea-sharing platform designed to foster innovation and collaboration in environmental solutions. The platform allows users to propose, discuss, and monetize ideas that address sustainability challenges, ranging from renewable energy solutions to waste reduction strategies and eco-friendly products.
+
+#### Key Concepts and Workflows
+- **User Roles**: The platform supports two primary user roles - `MEMBER` and `ADMIN`. Members can create, edit, and interact with ideas, while admins handle moderation and platform management.
+- **Idea Lifecycle**: Ideas start as drafts, can be edited, submitted for review, approved or rejected by admins, and published. Premium ideas can be monetized through purchases.
+- **Community Engagement**: Users can vote on ideas (upvote/downvote) and participate in threaded discussions via comments and replies.
+- **Monetization**: Idea authors can mark their ideas as premium, set a price, and earn through Stripe-powered purchases. Buyers gain access to exclusive content.
+- **Moderation**: Admins review submitted ideas, provide feedback on rejections, and maintain platform quality.
+- **Categories**: Ideas are organized into categories for better discoverability.
+- **Search and Discovery**: The platform includes search functionality to help users find relevant ideas.
+- **Newsletter**: Users can subscribe to newsletters for updates.
+
+#### Architecture Overview
+The backend follows a modular architecture with feature-based modules:
+- **Authentication Module**: Handles user registration, login, session management, and role-based access control using Better Auth.
+- **Idea Module**: Manages CRUD operations for ideas, status transitions, and premium access control.
+- **Comment Module**: Supports threaded comments with nested replies.
+- **Vote Module**: Handles voting logic with unique constraints per user-idea pair.
+- **Payment Module**: Integrates with Stripe for checkout sessions, webhooks, and purchase verification.
+- **Admin Module**: Provides administrative endpoints for user management, idea moderation, and category administration.
+- **Search Module**: Implements search functionality across ideas.
+- **Newsletter Module**: Manages email subscriptions.
+
+The application uses Express.js as the web framework, TypeScript for type safety, Prisma as the ORM for PostgreSQL database interactions, and Zod for request validation. Middleware handles authentication, error handling, and role-based permissions.
+
+#### Database Schema Overview
+The database is designed with the following key entities:
+- **User**: Stores user information, roles, and relationships to ideas, comments, votes, and purchases.
+- **Session**: Manages authentication sessions via Better Auth.
+- **Category**: Organizes ideas into thematic groups.
+- **Idea**: Core entity containing idea details, status, pricing, and engagement metrics.
+- **Vote**: Tracks user votes on ideas with upvote/downvote types.
+- **Comment**: Supports threaded discussions with parent-child relationships.
+- **Purchase**: Records premium idea purchases with Stripe integration.
+- **Newsletter**: Manages email subscriptions.
+
+Relationships ensure data integrity, with cascading deletes and unique constraints where appropriate.
+
 ## Live URLs
 - Local API server: `http://localhost:5000`
 - API base URL: `http://localhost:5000/api/v1`
@@ -69,6 +108,9 @@ prisma/
   - Stripe checkout and verification
 - `admin`
   - user management, moderation, category and idea administration
+
+## API Documentation
+The API endpoints are documented in the included Postman collection file: `Ecofy_Postman_Collection.json`. Import this file into Postman to explore and test the API endpoints interactively. The collection includes examples for all major API areas, authentication flows, and error handling scenarios.
 
 ## Environment Variables
 Create a `.env` file in the backend root with values like the following:
@@ -164,5 +206,7 @@ This backend is designed to work with the Ecofy Next.js frontend in the sibling 
 
 - Frontend app: `http://localhost:3000`
 - Backend API: `http://localhost:5000/api/v1`
+- live url: `https://ecofy-backend-ij77.onrender.com`
+- Frontend live url: `https://ecofy-pro.vercel.app/`
 
 Run both applications together for full functionality.
