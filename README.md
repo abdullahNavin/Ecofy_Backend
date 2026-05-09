@@ -1,78 +1,41 @@
 # Ecofy Backend
 
-Backend API for the Ecofy sustainability idea-sharing platform.
-
 ## Overview
-Ecofy Backend powers the core business logic behind the Ecofy platform. It manages authentication, idea workflows, moderation, community engagement, premium idea purchases, and dashboard data for both members and admins.
 
-The API is built with Express, TypeScript, Prisma, and PostgreSQL, with Stripe handling premium checkout flows and Better Auth supporting secure session-based authentication.
+Ecofy Backend is an Express 5 and Prisma API for the Ecofy sustainability idea platform. It manages authentication, idea workflows, moderation, payments, notifications, creator analytics, AI-assisted drafting, semantic search, and personalized recommendations.
 
-### Detailed Project Explanation
-Ecofy is a comprehensive sustainability idea-sharing platform designed to foster innovation and collaboration in environmental solutions. The platform allows users to propose, discuss, and monetize ideas that address sustainability challenges, ranging from renewable energy solutions to waste reduction strategies and eco-friendly products.
+## Current Feature Set
 
-#### Key Concepts and Workflows
-- **User Roles**: The platform supports two primary user roles - `MEMBER` and `ADMIN`. Members can create, edit, and interact with ideas, while admins handle moderation and platform management.
-- **Idea Lifecycle**: Ideas start as drafts, can be edited, submitted for review, approved or rejected by admins, and published. Premium ideas can be monetized through purchases.
-- **Community Engagement**: Users can vote on ideas (upvote/downvote) and participate in threaded discussions via comments and replies.
-- **Monetization**: Idea authors can mark their ideas as premium, set a price, and earn through Stripe-powered purchases. Buyers gain access to exclusive content.
-- **Moderation**: Admins review submitted ideas, provide feedback on rejections, and maintain platform quality.
-- **Categories**: Ideas are organized into categories for better discoverability.
-- **Search and Discovery**: The platform includes search functionality to help users find relevant ideas.
-- **Newsletter**: Users can subscribe to newsletters for updates.
+### Core Platform
 
-#### Architecture Overview
-The backend follows a modular architecture with feature-based modules:
-- **Authentication Module**: Handles user registration, login, session management, and role-based access control using Better Auth.
-- **Idea Module**: Manages CRUD operations for ideas, status transitions, and premium access control.
-- **Comment Module**: Supports threaded comments with nested replies.
-- **Vote Module**: Handles voting logic with unique constraints per user-idea pair.
-- **Payment Module**: Integrates with Stripe for checkout sessions, webhooks, and purchase verification.
-- **Admin Module**: Provides administrative endpoints for user management, idea moderation, and category administration.
-- **Search Module**: Implements search functionality across ideas.
-- **Newsletter Module**: Manages email subscriptions.
-
-The application uses Express.js as the web framework, TypeScript for type safety, Prisma as the ORM for PostgreSQL database interactions, and Zod for request validation. Middleware handles authentication, error handling, and role-based permissions.
-
-#### Database Schema Overview
-The database is designed with the following key entities:
-- **User**: Stores user information, roles, and relationships to ideas, comments, votes, and purchases.
-- **Session**: Manages authentication sessions via Better Auth.
-- **Category**: Organizes ideas into thematic groups.
-- **Idea**: Core entity containing idea details, status, pricing, and engagement metrics.
-- **Vote**: Tracks user votes on ideas with upvote/downvote types.
-- **Comment**: Supports threaded discussions with parent-child relationships.
-- **Purchase**: Records premium idea purchases with Stripe integration.
-- **Newsletter**: Manages email subscriptions.
-
-Relationships ensure data integrity, with cascading deletes and unique constraints where appropriate.
-
-## Live URLs
-- Local API server: `http://localhost:5000`
-- API base URL: `http://localhost:5000/api/v1`
-- Better Auth base URL: `http://localhost:5000/api/v1/auth/better-auth`
-
-If you deploy the project, replace the local URLs above with your production domain.
-
-## Core Features
-- Session-based authentication with login, signup, logout, and current-user endpoints
-- Role-aware access control for `MEMBER` and `ADMIN` users
-- Idea lifecycle management:
-  - create draft ideas
-  - edit rejected or draft ideas
-  - submit ideas for review
-  - delete non-approved ideas
-- Admin moderation workflow:
-  - approve ideas
-  - reject ideas with feedback
-  - change idea status
-  - remove ideas when necessary
-- Category management for organizing sustainability ideas
-- Community engagement with voting and threaded comments
-- Premium idea purchase flow using Stripe Checkout
+- Session-based auth with member and admin roles
+- Draft, submit, approve, reject, and delete idea workflows
+- Category management
+- Voting and threaded comments
+- Premium idea purchases with Stripe
 - Purchase verification and locked-content access control
-- Member dashboard summary data and personal idea listing endpoints
+
+### Dashboard and Operations
+
+- Member dashboard summary
+- Creator analytics for views, engagement, purchases, and revenue
+- Admin overview metrics
+- Moderation filters and pagination
+- User management
+- Moderation audit logs
+- In-app notification APIs
+
+### AI and Discovery
+
+- AI Idea Assistant endpoint for improving idea drafts
+- Gemini for text generation
+- OpenAI for embeddings
+- Stored embeddings for approved ideas
+- Semantic search over approved ideas
+- Personalized recommendation endpoint based on user interactions
 
 ## Tech Stack
+
 - Node.js
 - Express 5
 - TypeScript
@@ -84,129 +47,142 @@ If you deploy the project, replace the local URLs above with your production dom
 - TSX
 
 ## Project Structure
+
 ```txt
 src/
-  common/           shared middleware, helpers, and utilities
-  lib/              reusable infrastructure such as Prisma client
-  modules/          feature-based modules like auth, idea, payment, admin
-  scripts/          utility scripts such as admin seeding
-  server.ts         application entry point
+  auth/                    auth setup
+  common/                  middleware, helpers, shared types
+  config/                  env and provider config
+  lib/                     prisma client
+  modules/
+    admin/                 moderation, users, overview, audit logs
+    ai/                    Gemini text generation and embedding orchestration
+    analytics/             creator analytics and interaction events
+    auth/                  login, signup, profile
+    category/              category CRUD
+    comment/               comments and replies
+    idea/                  idea CRUD and lifecycle
+    newsletter/            newsletter subscriptions
+    notification/          in-app notifications
+    payment/               Stripe checkout, webhook, verification
+    search/                semantic search and recommendations
+    vote/                  votes
+  routes/                  route registration
+  scripts/                 admin seeding
+  app.ts                   Express app
+  server.ts                server bootstrap
 prisma/
-  schema.prisma     database schema
+  schema.prisma            database schema
 ```
 
 ## Main API Areas
+
 - `auth`
-  - login, signup, logout, current user, profile updates
+  - login, signup, logout, current user, dashboard summary, profile updates
 - `ideas`
-  - public idea listing, details, create/update/delete, submit, member idea listing
+  - public listing, details, create, update, submit, delete, my ideas
 - `comments`
-  - idea comments and replies
+  - threaded comments and replies
 - `votes`
   - cast and remove votes
 - `payments`
-  - Stripe checkout and verification
+  - checkout, verification, purchases, webhook
 - `admin`
-  - user management, moderation, category and idea administration
-
-## API Documentation
-The API endpoints are documented in the included Postman collection file: `Ecofy_Postman_Collection.json`. Import this file into Postman to explore and test the API endpoints interactively. The collection includes examples for all major API areas, authentication flows, and error handling scenarios.
+  - overview, moderation queue, audit logs, users, categories
+- `notifications`
+  - list, mark read, mark all read
+- `analytics`
+  - creator analytics
+- `search`
+  - semantic search and personalized recommendations
+- `ai`
+  - idea assistant
 
 ## Environment Variables
-Create a `.env` file in the backend root with values like the following:
+
+Create `C:\projects\Ecofy_server\.env`:
 
 ```env
 DATABASE_URL=your_postgresql_connection_string
 BETTER_AUTH_SECRET=your_auth_secret
 BETTER_AUTH_URL=http://localhost:5000/api/v1/auth/better-auth
+
 STRIPE_SECRET_KEY=your_stripe_secret_key
 STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret
 STRIPE_CURRENCY=usd
+
+CLIENT_URL=http://localhost:3000
 PORT=5000
 NODE_ENV=development
-CLIENT_URL=http://localhost:3000
+
+GEMINI_API_KEY=your_gemini_api_key
+GEMINI_TEXT_MODEL=gemini-2.5-flash
+
+OPENAI_API_KEY=your_openai_api_key
+OPENAI_EMBEDDING_MODEL=text-embedding-3-small
 ```
 
-## Getting Started
-### 1. Clone the repository
-```bash
-git clone <your-repository-url>
-cd Ecofy_server
-```
+## Local Development
 
-### 2. Install dependencies
+### Prerequisites
+
+- Node.js 20+
+- PostgreSQL-compatible database
+
+### Install
+
 ```bash
 pnpm install
 ```
 
-### 3. Configure the environment
-Add the `.env` file shown above.
+### Generate Prisma Client
 
-### 4. Generate Prisma client
 ```bash
 pnpm run db:generate
 ```
 
-### 5. Apply the database schema
+### Apply Schema
+
 ```bash
 pnpm run db:push
 ```
 
-If you prefer migrations during development, you can also use:
+If you prefer migrations:
 
 ```bash
 pnpm run db:migrate
 ```
 
-### 6. Seed the admin account
+### Seed Admin
+
 ```bash
 pnpm run seed:admin
 ```
 
-### 7. Start the development server
+### Run
+
 ```bash
 pnpm run dev
 ```
 
-The API will run at `http://localhost:5000`.
+The API runs at `http://localhost:5000`.
 
-## Available Scripts
-- `pnpm run dev`  
-  Starts the backend in watch mode using `tsx`.
+## Scripts
 
-- `pnpm run build`  
-  Compiles the TypeScript source into the `dist` output.
+- `pnpm run dev` starts the backend in watch mode
+- `pnpm run build` compiles TypeScript to `dist`
+- `pnpm run start` starts the compiled server
+- `pnpm run db:generate` regenerates the Prisma client
+- `pnpm run db:migrate` runs Prisma dev migrations
+- `pnpm run db:push` pushes the current schema
+- `pnpm run db:studio` opens Prisma Studio
+- `pnpm run seed:admin` seeds the initial admin account
 
-- `pnpm run start`  
-  Runs the compiled production build from `dist/server.js`.
+## Integration Notes
 
-- `pnpm run db:generate`  
-  Generates the Prisma client.
-
-- `pnpm run db:migrate`  
-  Runs Prisma development migrations.
-
-- `pnpm run db:push`  
-  Pushes the current Prisma schema to the database.
-
-- `pnpm run db:studio`  
-  Opens Prisma Studio for inspecting data.
-
-- `pnpm run seed:admin`  
-  Seeds the initial admin user.
-
-## Development Notes
-- The frontend is expected to run on `http://localhost:3000`.
-- Authentication relies on cookies, so frontend and backend URLs should stay aligned with the configured environment variables.
-- Premium idea access depends on successful Stripe checkout verification.
-- Admin-only endpoints should be tested with an account seeded or promoted to the `ADMIN` role.
-
-## Frontend Pairing
-This backend is designed to work with the Ecofy Next.js frontend in the sibling client project:
-
-- Frontend app: `http://localhost:3000`
-- Backend API: `http://localhost:5000/api/v1`
-- live url: `https://ecofy-backend-ij77.onrender.com`
-- Frontend live url: `https://ecofy-pro.vercel.app/`
-
-Run both applications together for full functionality.
+- The frontend is expected at `http://localhost:3000`.
+- Authentication relies on cookies, so local frontend and backend URLs must stay aligned.
+- Stripe webhook handling is mounted before global JSON parsing.
+- AI text generation uses Gemini.
+- Embeddings, semantic search, and recommendations use OpenAI embeddings.
+- After changing AI environment variables, restart the backend process so the new values are loaded.
