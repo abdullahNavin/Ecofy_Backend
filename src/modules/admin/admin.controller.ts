@@ -8,6 +8,10 @@ const pageQuerySchema = z.object({
   page: z.coerce.number().int().positive().default(1),
   limit: z.coerce.number().int().positive().max(50).default(20),
   status: z.string().optional(),
+  q: z.string().trim().optional(),
+  category: z.string().trim().optional(),
+  role: z.enum(["MEMBER", "ADMIN"]).optional(),
+  ideaId: z.string().optional(),
 });
 
 const updateIdeaStatusSchema = z.object({
@@ -22,8 +26,10 @@ export const listIdeas = [
       const page = Number(req.query["page"]) || 1;
       const limit = Number(req.query["limit"]) || 20;
       const status = req.query["status"] ? String(req.query["status"]) : undefined;
-      const result = await adminService.adminListIdeas(page, limit, status);
-      res.json({ success: true, ...result });
+      const q = req.query["q"] ? String(req.query["q"]) : undefined;
+      const category = req.query["category"] ? String(req.query["category"]) : undefined;
+      const result = await adminService.adminListIdeas(page, limit, status, q, category);
+      res.json({ success: true, data: result.ideas, meta: result.meta });
     } catch (err) {
       next(err);
     }
@@ -37,7 +43,7 @@ export const approveIdea = async (
 ) => {
   try {
     const id = String(req.params["id"]);
-    const data = await adminService.approveIdea(id);
+    const data = await adminService.approveIdea(id, req.user!.id);
     res.json({ success: true, data });
   } catch (err) {
     next(err);
@@ -49,7 +55,7 @@ export const rejectIdea = [
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const id = String(req.params["id"]);
-      const data = await adminService.rejectIdea(id, req.body.feedback);
+      const data = await adminService.rejectIdea(id, req.body.feedback, req.user!.id);
       res.json({ success: true, data });
     } catch (err) {
       next(err);
@@ -64,7 +70,7 @@ export const deleteIdea = async (
 ) => {
   try {
     const id = String(req.params["id"]);
-    await adminService.adminDeleteIdea(id);
+    await adminService.adminDeleteIdea(id, req.user!.id);
     res.json({ success: true, data: { message: "Idea deleted" } });
   } catch (err) {
     next(err);
@@ -79,7 +85,8 @@ export const updateIdeaStatus = [
       const data = await adminService.updateIdeaStatus(
         id,
         req.body.status,
-        req.body.feedback
+        req.body.feedback,
+        req.user!.id
       );
       res.json({ success: true, data });
     } catch (err) {
@@ -94,8 +101,10 @@ export const listUsers = [
     try {
       const page = Number(req.query["page"]) || 1;
       const limit = Number(req.query["limit"]) || 20;
-      const result = await adminService.adminListUsers(page, limit);
-      res.json({ success: true, ...result });
+      const q = req.query["q"] ? String(req.query["q"]) : undefined;
+      const role = req.query["role"] ? String(req.query["role"]) : undefined;
+      const result = await adminService.adminListUsers(page, limit, q, role);
+      res.json({ success: true, data: result.users, meta: result.meta });
     } catch (err) {
       next(err);
     }
@@ -143,3 +152,31 @@ export const changeUserRole = async (
     next(err);
   }
 };
+
+export const overview = async (
+  _req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const data = await adminService.getAdminOverview();
+    res.json({ success: true, data });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const listAuditLogs = [
+  validateQuery(pageQuerySchema),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const page = Number(req.query["page"]) || 1;
+      const limit = Number(req.query["limit"]) || 20;
+      const ideaId = req.query["ideaId"] ? String(req.query["ideaId"]) : undefined;
+      const result = await adminService.listAuditLogs(page, limit, ideaId);
+      res.json({ success: true, data: result.logs, meta: result.meta });
+    } catch (err) {
+      next(err);
+    }
+  },
+];

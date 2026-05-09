@@ -8,6 +8,7 @@ import {
   listIdeasQuerySchema,
 } from "./idea.validator";
 import { IdeaStatus, Prisma } from "@prisma/client";
+import { recordIdeaEvent } from "../analytics/analytics.service";
 
 const ideaSelect = {
   id: true,
@@ -104,6 +105,9 @@ export async function getIdeaById(ideaId: string, userId?: string) {
     },
   });
   if (!idea) throw new AppError("Idea not found", 404);
+  if (idea.status === IdeaStatus.APPROVED) {
+    await recordIdeaEvent(ideaId, "VIEW", userId).catch(() => undefined);
+  }
 
   const baseIdea = {
     ...idea,

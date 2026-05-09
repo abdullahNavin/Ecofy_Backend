@@ -1,6 +1,7 @@
 import prisma from "../../lib/prisma";
 import { AppError } from "../../common/middleware/errorHandler";
 import { VoteType } from "@prisma/client";
+import { recordIdeaEvent } from "../analytics/analytics.service";
 
 export async function castVote(
   userId: string,
@@ -45,6 +46,12 @@ export async function castVote(
       }),
     ]);
   }
+
+  await recordIdeaEvent(
+    ideaId,
+    type === VoteType.UPVOTE ? "VOTE_UP" : "VOTE_DOWN",
+    userId
+  ).catch(() => undefined);
 
   return prisma.idea.findUnique({
     where: { id: ideaId },

@@ -9,6 +9,11 @@ const router = Router();
 router.use(requireAuth, requireAdmin);
 
 // Ideas
+router.get("/overview", ctrl.overview);
+router.get(
+  "/audit-logs",
+  ...(Array.isArray(ctrl.listAuditLogs) ? ctrl.listAuditLogs : [ctrl.listAuditLogs])
+);
 router.get(
   "/ideas",
   ...(Array.isArray(ctrl.listIdeas) ? ctrl.listIdeas : [ctrl.listIdeas])

@@ -5,6 +5,7 @@ import helmet from "helmet";
 import { env } from "./config/env";
 import { errorHandler } from "./common/middleware/errorHandler";
 import apiRoutes from "./routes/index";
+import { webhook as stripeWebhook } from "./modules/payment/payment.controller";
 
 const app = express();
 
@@ -24,6 +25,8 @@ app.use(
 );
 
 // ─── Body Parsers ────────────────────────────────────────────────────────────
+app.post("/api/v1/payments/webhook", express.raw({ type: "application/json" }), stripeWebhook);
+
 app.use(express.json({ limit: "10kb" })); // prevent large payload attacks
 app.use(express.urlencoded({ extended: true, limit: "10kb" }));
 

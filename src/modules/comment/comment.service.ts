@@ -1,5 +1,7 @@
 import prisma from "../../lib/prisma";
 import { AppError } from "../../common/middleware/errorHandler";
+import { createNotification } from "../notification/notification.service";
+import { recordIdeaEvent } from "../analytics/analytics.service";
 
 const commentSelect = {
   id: true,
@@ -69,14 +71,19 @@ export async function createComment(
   content: string,
   parentId?: string
 ) {
-  const idea = await prisma.idea.findUnique({ where: { id: ideaId } });
+  const idea = await prisma.idea.findUnique({
+    where: { id: ideaId },
+    select: { id: true, title: true, authorId: true },
+  });
   if (!idea) throw new AppError("Idea not found", 404);
 
+  let parentAuthorId: string | null = null;
   if (parentId) {
     const parent = await prisma.comment.findUnique({ where: { id: parentId } });
     if (!parent || parent.ideaId !== ideaId) {
       throw new AppError("Parent comment not found", 404);
     }
+    parentAuthorId = parent.authorId;
   }
 
   const [comment] = await prisma.$transaction([
@@ -89,6 +96,32 @@ export async function createComment(
       data: { commentCount: { increment: 1 } },
     }),
   ]);
+
+  const notifications = [];
+  if (idea.authorId !== authorId) {
+    notifications.push(
+      createNotification({
+        userId: idea.authorId,
+        type: "IDEA_COMMENT",
+        title: "New comment on your idea",
+        body: `Someone commented on "${idea.title}".`,
+        href: `/ideas/${idea.id}`,
+      })
+    );
+  }
+  if (parentAuthorId && parentAuthorId !== authorId && parentAuthorId !== idea.authorId) {
+    notifications.push(
+      createNotification({
+        userId: parentAuthorId,
+        type: "COMMENT_REPLY",
+        title: "New reply to your comment",
+        body: `Someone replied in "${idea.title}".`,
+        href: `/ideas/${idea.id}`,
+      })
+    );
+  }
+  await Promise.all(notifications).catch(() => undefined);
+  await recordIdeaEvent(ideaId, parentId ? "COMMENT_REPLY" : "COMMENT", authorId).catch(() => undefined);
 
   return comment;
 }

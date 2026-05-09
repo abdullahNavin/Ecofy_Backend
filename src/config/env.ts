@@ -6,6 +6,11 @@ function requireEnv(key: string): string {
   return value;
 }
 
+function envValue(key: string, fallback = ""): string {
+  const value = process.env[key]?.trim();
+  return value ? value : fallback;
+}
+
 function trimTrailingSlashes(value: string) {
   return value.replace(/\/+$/, "");
 }
@@ -20,10 +25,15 @@ export const env = {
   DATABASE_URL: requireEnv("DATABASE_URL"),
   BETTER_AUTH_SECRET: requireEnv("BETTER_AUTH_SECRET"),
   BETTER_AUTH_URL: defaultBetterAuthURL,
-  STRIPE_SECRET_KEY: process.env["STRIPE_SECRET_KEY"] ?? "",
-  STRIPE_WEBHOOK_SECRET: process.env["STRIPE_WEBHOOK_SECRET"] ?? "",
-  STRIPE_CURRENCY: process.env["STRIPE_CURRENCY"] ?? "usd",
+  GEMINI_API_KEY: envValue("GEMINI_API_KEY"),
+  GEMINI_TEXT_MODEL: envValue("GEMINI_TEXT_MODEL", "gemini-2.5-flash"),
+  OPENAI_API_KEY: envValue("OPENAI_API_KEY"),
+  OPENAI_RESPONSE_MODEL: envValue("OPENAI_RESPONSE_MODEL", "gpt-4.1-mini"),
+  OPENAI_EMBEDDING_MODEL: envValue("OPENAI_EMBEDDING_MODEL", "text-embedding-3-small"),
+  STRIPE_SECRET_KEY: envValue("STRIPE_SECRET_KEY"),
+  STRIPE_WEBHOOK_SECRET: envValue("STRIPE_WEBHOOK_SECRET"),
+  STRIPE_CURRENCY: envValue("STRIPE_CURRENCY", "usd"),
   PORT: parseInt(process.env["PORT"] ?? "4000", 10),
-  NODE_ENV: process.env["NODE_ENV"] ?? "development",
-  CLIENT_URL: trimTrailingSlashes(process.env["CLIENT_URL"] ?? "http://localhost:3000"),
+  NODE_ENV: envValue("NODE_ENV", "development"),
+  CLIENT_URL: trimTrailingSlashes(envValue("CLIENT_URL", "http://localhost:3000")),
 };

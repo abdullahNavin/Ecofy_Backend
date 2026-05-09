@@ -49,6 +49,10 @@ model User {
   purchases  Purchase[]
   sessions   Session[]
   newsletter Newsletter?
+  notifications Notification[]
+  ideaEvents IdeaEvent[]
+  adminAuditLogs ModerationAuditLog[] @relation("AdminAuditLogs")
+  aiIdeaSuggestions AiIdeaSuggestion[]
 
   @@map("users")
 }
@@ -113,6 +117,10 @@ model Idea {
   votes     Vote[]
   comments  Comment[]
   purchases Purchase[]
+  events    IdeaEvent[]
+  auditLogs ModerationAuditLog[]
+  embedding IdeaEmbedding?
+  aiSuggestions AiIdeaSuggestion[]
 
   @@index([status])
   @@index([categoryId])
@@ -186,6 +194,96 @@ model Purchase {
 
   @@unique([userId, ideaId])
   @@map("purchases")
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  type      String
+  title     String
+  body      String
+  href      String?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  userId String
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+model IdeaEvent {
+  id        String   @id @default(cuid())
+  type      String
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  ideaId String
+  userId String?
+
+  idea Idea @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([ideaId, type])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("idea_events")
+}
+
+model ModerationAuditLog {
+  id         String      @id @default(cuid())
+  action     String
+  note       String?
+  fromStatus IdeaStatus?
+  toStatus   IdeaStatus?
+  createdAt  DateTime    @default(now())
+
+  ideaId  String
+  adminId String
+
+  idea  Idea @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+  admin User @relation("AdminAuditLogs", fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@index([ideaId])
+  @@index([adminId])
+  @@index([createdAt])
+  @@map("moderation_audit_logs")
+}
+
+model IdeaEmbedding {
+  id          String   @id @default(cuid())
+  contentHash String
+  model       String
+  dimensions  Int
+  embedding   Json
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  ideaId String @unique
+  idea   Idea   @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+
+  @@index([updatedAt])
+  @@map("idea_embeddings")
+}
+
+model AiIdeaSuggestion {
+  id          String   @id @default(cuid())
+  prompt      String?
+  model       String
+  inputJson   Json
+  outputJson  Json
+  createdAt   DateTime @default(now())
+
+  userId String
+  ideaId String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  idea Idea? @relation(fields: [ideaId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([ideaId])
+  @@map("ai_idea_suggestions")
 }
 
 // ─────────────────────────────────────────────

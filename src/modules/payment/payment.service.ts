@@ -2,6 +2,8 @@ import prisma from "../../lib/prisma";
 import { AppError } from "../../common/middleware/errorHandler";
 import { stripe } from "../../config/stripe";
 import { env } from "../../config/env";
+import { createNotification } from "../notification/notification.service";
+import { recordIdeaEvent } from "../analytics/analytics.service";
 
 export async function createCheckout(userId: string, ideaId: string) {
   const idea = await prisma.idea.findUnique({ where: { id: ideaId } });
@@ -75,6 +77,20 @@ export async function verifyPurchase(sessionId: string, userId: string) {
         },
         include: { idea: { select: { id: true, title: true } } },
       });
+      const idea = await prisma.idea.findUnique({
+        where: { id: purchase.ideaId },
+        select: { authorId: true, title: true },
+      });
+      if (idea && idea.authorId !== userId) {
+        await createNotification({
+          userId: idea.authorId,
+          type: "PREMIUM_IDEA_PURCHASED",
+          title: "Your premium idea was purchased",
+          body: `"${idea.title}" has a new purchase.`,
+          href: `/dashboard/member/ideas`,
+        }).catch(() => undefined);
+      }
+      await recordIdeaEvent(purchase.ideaId, "PURCHASE", userId).catch(() => undefined);
     }
   }
 
@@ -95,7 +111,7 @@ export async function handleWebhook(rawBody: Buffer, signature: string) {
 
   if (event.type === "checkout.session.completed") {
     const session = event.data.object;
-    await prisma.purchase.update({
+    const purchase = await prisma.purchase.update({
       where: { stripeSessionId: session.id },
       data: {
         status: "completed",
@@ -104,7 +120,18 @@ export async function handleWebhook(rawBody: Buffer, signature: string) {
             ? session.payment_intent
             : null,
       },
+      include: { idea: { select: { id: true, title: true, authorId: true } } },
     });
+    if (purchase.idea.authorId !== purchase.userId) {
+      await createNotification({
+        userId: purchase.idea.authorId,
+        type: "PREMIUM_IDEA_PURCHASED",
+        title: "Your premium idea was purchased",
+        body: `"${purchase.idea.title}" has a new purchase.`,
+        href: `/dashboard/member/ideas`,
+      }).catch(() => undefined);
+    }
+    await recordIdeaEvent(purchase.ideaId, "PURCHASE", purchase.userId).catch(() => undefined);
   }
 
   if (event.type === "charge.refunded") {

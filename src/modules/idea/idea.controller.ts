@@ -15,7 +15,7 @@ export const listIdeas = [
         req.query as any,
         req.user?.id
       );
-      res.json({ success: true, ...result });
+      res.json({ success: true, data: result.ideas, meta: result.meta });
     } catch (err) {
       next(err);
     }

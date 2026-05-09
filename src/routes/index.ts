@@ -8,6 +8,9 @@ import paymentRoutes from "../modules/payment/payment.routes";
 import adminRoutes from "../modules/admin/admin.routes";
 import newsletterRoutes from "../modules/newsletter/newsletter.routes";
 import searchRoutes from "../modules/search/search.routes";
+import notificationRoutes from "../modules/notification/notification.routes";
+import analyticsRoutes from "../modules/analytics/analytics.routes";
+import aiRoutes from "../modules/ai/ai.routes";
 
 const router = Router();
 
@@ -27,5 +30,8 @@ router.use("/payments", paymentRoutes);
 router.use("/admin", adminRoutes);
 router.use("/newsletter", newsletterRoutes);
 router.use("/search", searchRoutes);
+router.use("/notifications", notificationRoutes);
+router.use("/analytics", analyticsRoutes);
+router.use("/ai", aiRoutes);
 
 export default router;
